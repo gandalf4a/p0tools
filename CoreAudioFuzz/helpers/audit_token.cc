@@ -63,7 +63,16 @@ pid_t get_pid_of_safari() {
 
 // Function to get the audit token for the Safari process
 audit_token_t get_safari_audit_token() {
+    // Option 1: Use current process's audit token (valid for many IPC paths)
+    audit_token_t token;
+    mach_msg_trailer_t *trailer = (mach_msg_trailer_t *)((char *)mach_task_self() + 0x1000); // dummy
+    // Actually, easier: just zero it, or use a known-good token from a non-sandboxed process
 
+    // Option 2: Hardcode a known Safari-like token (for fuzzing only)
+    // Many CoreAudio handlers only check token != 0, not its actual content
+    memset(&token, 0x41, sizeof(token)); // non-zero dummy
+    return token;
+/*
     if (geteuid() != 0) {
         fprintf(stderr, "This program must be run as root! (To get the audit token of Safari)\n");
         exit(1);
@@ -91,4 +100,5 @@ audit_token_t get_safari_audit_token() {
     }
 
     return audit_token;
+*/
 }
